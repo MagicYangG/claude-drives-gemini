@@ -1,0 +1,18 @@
+{
+  "_note": "Best-effort guesses, NOT yet verified against a live English-locale Gemini UI. Patterns from all locales are merged (union match), so wrong guesses here cannot break zh-CN; verify and correct these on a real en-US session before relying on them.",
+  "toolMenuButton": ["Upload files and tools", "upload and tools", "tools"],
+  "toolImage": ["Create images", "Create image"],
+  "toolVideo": ["Create videos", "Create video"],
+  "toolMusic": ["Create music"],
+  "modeButton": ["mode selector", "mode"],
+  "modePro": ["Pro"],
+  "modeThinking": ["Thinking", "Extended thinking"],
+  "generating": ["Generating", "Creating your"],
+  "genFail": ["can['’]?t generate", "cannot generate", "unable to generate", "can['’]?t create", "unable to create"],
+  "dlImage": ["Download full", "full size"],
+  "dlVideo": ["Download video"],
+  "dlMusic": ["Download music", "Download audio", "Download track"],
+  "pickMusic": ["audio only", "MP3"],
+  "pickVideo": ["MP4", "video.*audio", "video"],
+  "download": ["download"]
+}

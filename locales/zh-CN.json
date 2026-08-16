@@ -1,0 +1,17 @@
+{
+  "toolMenuButton": ["上传和工具", "上传文件和", "工具"],
+  "toolImage": ["制作图片"],
+  "toolVideo": ["制作视频"],
+  "toolMusic": ["制作音乐"],
+  "modeButton": ["模式选择器", "模式"],
+  "modePro": ["Pro"],
+  "modeThinking": ["扩展思考", "扩展"],
+  "generating": ["正在生成"],
+  "genFail": ["无法生成", "无法创作", "不能生成"],
+  "dlImage": ["下载完整尺寸", "完整尺寸的图片", "下载原图"],
+  "dlVideo": ["下载视频", "下载.*视频"],
+  "dlMusic": ["下载音乐作品", "下载.*音乐", "下载.*作品"],
+  "pickMusic": ["纯音频", "MP3"],
+  "pickVideo": ["视频.*音频", "含音频", "MP4"],
+  "download": ["下载"]
+}

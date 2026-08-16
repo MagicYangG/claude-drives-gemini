@@ -1,0 +1,9 @@
+config.json
+*.bak
+PUBLISH-CHECKLIST.md
+launchers/*.cmd
+launchers/*.sh
+out/
+*.log
+.impeccable/
+node_modules/
