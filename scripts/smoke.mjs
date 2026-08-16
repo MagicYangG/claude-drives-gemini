@@ -22,24 +22,32 @@ if (!alive) fail('专用 Chrome ' + PORT + ' 未运行');
 
 let WS = '', TID = '';
 try { WS = run([S('gemini-wsurl.mjs'), String(PORT)]).trim(); res.checks.ws = 'ok'; } catch { fail('取不到 GUID ws'); }
-try { TID = run([S('gemini-open.mjs'), WS]).trim(); res.checks.tab = 'ok(editor 就绪)'; } catch (e) { fail('开 tab/编辑器失败(多半登录过期→跑 login 启动器,或代理不通): ' + String(e.message || e).slice(0, 80)); }
+// gemini-open 即使编辑器没水合也退 0(留给下游重试),故编辑器就绪必须自己复验,不能只看退出码
+try { TID = run([S('gemini-open.mjs'), WS]).trim(); } catch (e) { fail('开 tab 失败(多半代理不通): ' + String(e.message || e).slice(0, 80)); }
+if (!TID) fail('开 tab 失败:未拿到 targetId');
 
 try {
   const L = labels();
   const sleep = ms => new Promise(r => setTimeout(r, ms));
-  const probe = async (name, src) => { // 控件可能晚于编辑器渲染(模式按钮实测有竞态),轮询最多 8s
-    const expr = '(()=>{const re=new RegExp(' + JSON.stringify(src) + ',"i");return [...document.querySelectorAll("button")].some(b=>re.test((b.getAttribute("aria-label")||"")+(b.textContent||"")));})()';
+  const evalTrue = async (expr) => { // 控件/编辑器可能晚渲染(模式按钮实测有竞态),轮询最多 8s
     for (let i = 0; i < 16; i++) {
       let out = ''; try { out = run([S('cdp-eval.mjs'), TID, expr, WS]).trim(); } catch { }
-      if (out === 'true') { res.checks[name] = 'ok'; return true; }
+      if (out === 'true') return true;
       await sleep(500);
     }
-    res.checks[name] = 'NOT-FOUND(改版?按 gemini-ui.md 自愈)';
     return false;
   };
+  const probe = async (name, src) => {
+    const expr = '(()=>{const re=new RegExp(' + JSON.stringify(src) + ',"i");return [...document.querySelectorAll("button")].some(b=>re.test((b.getAttribute("aria-label")||"")+(b.textContent||"")));})()';
+    const ok = await evalTrue(expr);
+    res.checks[name] = ok ? 'ok' : 'NOT-FOUND(改版?按 gemini-ui.md 自愈)';
+    return ok;
+  };
+  const okEditor = await evalTrue('!!(document.querySelector("div.ql-editor[contenteditable=true]")||document.querySelector("[contenteditable=true]"))');
+  res.checks.tab = okEditor ? 'ok(editor 就绪)' : 'EDITOR-NOT-READY(登录过期→跑 login 启动器,或代理不通)';
   const okMode = await probe('modeButton', rx(L.modeButton).source);
   const okTool = await probe('toolMenuButton', rx(L.toolMenuButton).source);
-  res.ok = okMode && okTool;
+  res.ok = okEditor && okMode && okTool;
 } catch (e) { res.checks.labels = 'ERR ' + String(e.message || e).slice(0, 60); }
 finally {
   try {
