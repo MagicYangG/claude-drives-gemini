@@ -9,21 +9,24 @@
 ## 特性
 
 - **一条命令端到端**:自动拉起专用 Chrome → 确保 Pro+扩展思考模式 → 直发提示词 → 阶段感知等待 → 原生下载,回执一行 JSON。
-- **绝不双花额度**:明确拒绝才安全重发;超时只延长等待;下载失败只重下载。
-- **高清无水印**:2816×1536 原图原生直下;在 Gemini 里一次性关掉可见水印(设置→媒体水印→关闭,官方功能),之后产物全部直出干净(SynthID 除外,见下方风险节)。
+
+- **重试策略**:明确拒绝才安全重发;超时只延长等待;下载失败只重下载。
+
+- **高清原图**:2816×1536 满血原图原生直下。
+
+  注：在 Gemini 里一次性关掉可见水印(设置→媒体水印→关闭,官方功能),之后产物全部直出干净(隐形 SynthID 仍在,见风险节)。
 
 ## 前置条件
 
 - Node ≥ 22 + Chrome + **Google AI Pro 及以上订阅**(网页版会员,非 API Key)。
 - Windows 实测跑通;macOS / Linux 骨架已备、待实测(欢迎反馈)。
-- 无法直连 Google 的网络需本地代理。
-- UI 文案匹配基于**中文**界面实测;`locales/en.json` 为未验证推测,欢迎实测校准。
+- 网络需能正常访问 Google。
 
 ## 快速开始
 
 **推荐:让 Claude Code 帮你装。**把下面这段直接发给 Claude Code:
 
-> 帮我安装 claude-drives-gemini:克隆 https://github.com/MagicYangG/claude-drives-gemini 到 `~/.claude/skills/claude-drives-gemini`,跑 `node setup/init.mjs` 生成本机配置,指导我完成一次性播种登录,再跑 start-chrome 启动器,最后用 `node scripts/smoke.mjs` 验证环境。
+> 帮我安装 claude-drives-gemini:克隆 https://github.com/MagicYangG/claude-drives-gemini 到 `~/.claude/skills/claude-drives-gemini`,跑 `node setup/init.mjs` 生成本机配置,指导我完成一次性登录,再跑 start-chrome 启动器,最后用 `node scripts/smoke.mjs` 验证环境。
 
 手动装有三步:
 
@@ -32,7 +35,7 @@ git clone https://github.com/MagicYangG/claude-drives-gemini ~/.claude/skills/cl
 cd ~/.claude/skills/claude-drives-gemini && node setup/init.mjs   # 探测 Chrome,生成 config 与启动器
 ```
 
-1. **播种登录(一次性)**:跑 `launchers/login-chrome.cmd|sh`,在弹出的纯净窗口登录 Google,关窗。(必须用这个窗口登录;带调试端口的窗口 Google 会拒登。)
+1. **登录(一次性)**:跑 `launchers/login-chrome.cmd|sh`,在弹出的纯净窗口登录 Google,关窗。(必须用这个窗口登录;带调试端口的窗口 Google 会拒登。)
 2. **起自动化 Chrome**:跑 `launchers/start-chrome.cmd|sh`。
 3. **验证**:`node scripts/smoke.mjs`(零额度冒烟:环境 → Chrome → 开页 → 控件探测)。
 4. **出活**:对 Claude 说「用 Gemini 生成一张…」即可;或直接一条命令:

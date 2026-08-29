@@ -9,21 +9,25 @@ Claude Code 用スキル:**Google AI Pro にログイン済みの Chrome** を A
 ## 特徴
 
 - **コマンド 1 本で完結**:専用 Chrome の自動起動 → Pro + 拡張思考モードの確認 → プロンプト送信 → 段階を認識した待機 → ネイティブダウンロード。戻り値は 1 行の JSON。
-- **クォータを二重消費しない**:明確な拒否のときだけ安全に再送信し、タイムアウトは待機を延長するだけ、ダウンロード失敗はダウンロードのみ再試行。
-- **フル解像度・ウォーターマークなし**:2816×1536 のオリジナルをネイティブに直接ダウンロード。可視ウォーターマークは Gemini 本体で一度だけオフに(設定 → メディアの透かし → オフ — 公式機能)。以降のダウンロードはすべてクリーンです(SynthID は対象外 — リスクの節を参照)。
+
+- **リトライ戦略**:明確な拒否のときだけ安全に再送信し、タイムアウトは待機を延長するだけ、ダウンロード失敗はダウンロードのみ再試行。
+
+- **フル解像度オリジナル**:2816×1536 のオリジナルをネイティブに直接ダウンロード。
+
+  注:可視ウォーターマークは Gemini 本体で一度だけオフにできます(設定 → メディアの透かし → オフ — 公式機能)。以降のダウンロードはすべてクリーンです(不可視の SynthID は残ります — リスクの節を参照)。
 
 ## 前提条件
 
 - Node ≥ 22 + Chrome + **Google AI Pro 以上のサブスクリプション**(ウェブ版の会員であり、API キーではありません)。
 - Windows で実機検証済み。macOS / Linux は土台のみ実装済みで未検証です(フィードバック歓迎)。
-- Google に直接接続できないネットワークではローカルプロキシが必要です。
+- ネットワークから Google に正常にアクセスできる必要があります。
 - UI テキストの照合は**中国語**インターフェースで検証済みです。`locales/en.json` は未検証の推測のため、実機での校正報告を歓迎します。
 
 ## クイックスタート
 
 **おすすめ:Claude Code にインストールさせる。**以下をそのまま Claude Code に貼り付けてください:
 
-> claude-drives-gemini をインストールして: https://github.com/MagicYangG/claude-drives-gemini を `~/.claude/skills/claude-drives-gemini` にクローンし、`node setup/init.mjs` でローカル設定を生成し、初回のシード用ログインを案内して、start-chrome ランチャーを実行し、最後に `node scripts/smoke.mjs` で環境を検証して。
+> claude-drives-gemini をインストールして: https://github.com/MagicYangG/claude-drives-gemini を `~/.claude/skills/claude-drives-gemini` にクローンし、`node setup/init.mjs` でローカル設定を生成し、初回のログインを案内して、start-chrome ランチャーを実行し、最後に `node scripts/smoke.mjs` で環境を検証して。
 
 手動インストールも 3 ステップです:
 
@@ -32,7 +36,7 @@ git clone https://github.com/MagicYangG/claude-drives-gemini ~/.claude/skills/cl
 cd ~/.claude/skills/claude-drives-gemini && node setup/init.mjs   # Chrome を検出し、config とランチャーを生成
 ```
 
-1. **シード用ログイン(初回のみ)**:`launchers/login-chrome.cmd|sh` を実行し、開いたクリーンなウィンドウで Google にログインして閉じます。(必ず*このウィンドウ*でログインしてください。デバッグポートを開いたウィンドウでは Google がログインを拒否します。)
+1. **ログイン(初回のみ)**:`launchers/login-chrome.cmd|sh` を実行し、開いたクリーンなウィンドウで Google にログインして閉じます。(必ず*このウィンドウ*でログインしてください。デバッグポートを開いたウィンドウでは Google がログインを拒否します。)
 2. **自動化用 Chrome の起動**:`launchers/start-chrome.cmd|sh` を実行します。
 3. **検証**:`node scripts/smoke.mjs`(クォータ消費ゼロのスモークテスト:環境 → Chrome → ページを開く → コントロール探索)。
 4. **生成**:Claude に「Gemini で画像を作って…」と伝えるだけ。あるいはコマンド 1 本:
