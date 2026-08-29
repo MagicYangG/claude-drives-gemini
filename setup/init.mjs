@@ -35,6 +35,12 @@ cfg.locales = val('--locales', cfg.locales || 'zh-CN,en');
 const chrome = val('--chrome', cfg.chrome || detectChrome());
 if (!chrome) { console.log(JSON.stringify({ ok: false, error: '未找到 Chrome,可用 --chrome 指定完整路径' })); process.exit(1); }
 cfg.chrome = chrome;
+// snap Chromium 的 AppArmor home 禁闭拒写 $HOME 下点开头目录:默认 profile 换可见目录;显式点目录直接报错(否则启动静默失败、端口永不监听)
+if (!isWin && String(chrome).includes('/snap/')) {
+  if (cfg.profileDir === join(homedir(), '.gemini-automation-chrome')) cfg.profileDir = join(homedir(), 'gemini-automation-chrome');
+  else if (cfg.profileDir.startsWith(homedir() + '/') && /[\\/]\.[^\\/]/.test(cfg.profileDir.slice(homedir().length)))
+    { console.log(JSON.stringify({ ok: false, error: 'snap Chromium 无法写 $HOME 下隐藏(点开头)目录的 profile,请换路径: ' + cfg.profileDir })); process.exit(1); }
+}
 // 配置值进启动器模板前校验(模板是裸占位符替换,坏值会把生成的 cmd/sh 变成任意命令)
 if (cfg.proxy) {
   let bad = /["'\s&|;`$]/.test(cfg.proxy);
@@ -42,7 +48,7 @@ if (cfg.proxy) {
   if (bad) { console.log(JSON.stringify({ ok: false, error: 'proxy 须为 http(s)/socks5 URL 且不含引号/空白/shell 字符: ' + cfg.proxy })); process.exit(1); }
 }
 for (const [k, v] of [['profileDir', cfg.profileDir], ['chrome', chrome]])
-  if (/["&|;`$]/.test(v)) { console.log(JSON.stringify({ ok: false, error: k + ' 路径含非法字符(" & | ; ` $): ' + v })); process.exit(1); }
+  if (/["&|;`$\r\n%]/.test(v)) { console.log(JSON.stringify({ ok: false, error: k + ' 路径含非法字符(" & | ; ` $ % 或换行): ' + v })); process.exit(1); }
 writeFileSync(cfgPath, JSON.stringify(cfg, null, 2) + '\n');
 
 // 渲染启动器(占位符替换;unix 版补执行位)

@@ -32,6 +32,18 @@ export const LOGIN_LAUNCHER = pick('GEMINI_STUDIO_LOGIN', 'loginLauncher', '') |
   join(SKILL_DIR, 'launchers', isWin ? 'login-chrome.cmd' : 'login-chrome.sh'),
 ]);
 
+// 系统默认下载目录:Linux 上 Chrome 跟随 xdg-user-dirs(zh_CN 桌面是 ~/下载,不是 ~/Downloads),其余平台 ~/Downloads
+export function sysDownloadDir() {
+  if (process.platform === 'linux') {
+    try {
+      const txt = readFileSync(join(homedir(), '.config', 'user-dirs.dirs'), 'utf8');
+      const m = txt.match(/^XDG_DOWNLOAD_DIR="?([^"\n]+)"?/m);
+      if (m) { const p = m[1].replace('$HOME', homedir()); if (existsSync(p)) return p; }
+    } catch { }
+  }
+  return join(homedir(), 'Downloads');
+}
+
 // 主 Chrome 用户数据目录(读 Preferences / DevToolsActivePort;三平台)
 export function mainChromeUserData() {
   if (isWin) return (env.LOCALAPPDATA || join(homedir(), 'AppData', 'Local')) + '/Google/Chrome/User Data';

@@ -41,7 +41,7 @@ cd ~/.claude/skills/claude-drives-gemini && node setup/init.mjs   # Chrome を�
 node scripts/gemini-gen.mjs image "画像を直接生成してください:雨上がりの夕暮れ、水郷の街の石橋、水彩風。説明は不要です。" out/image.png --dewatermark
 ```
 
-動画・音楽も同様で、`image` を `video` / `music` に置き換えるだけです。プロンプトには**明確な生成動詞**(「直接生成/作成してください」+「説明は不要」)が必須で、そうでないと Gemini にルーティングを誤られます。9:16 の縦型動画やスタイルテンプレートを使う場合は `--use-tool` を付けてください。ステップごとのコマンドチェーンと全スクリプトの使い方は [`scripts/README.md`](scripts/README.md) にあります。
+動画・音楽も同様で、`image` を `video` / `music` に置き換えるだけです。プロンプトには**明確な生成動詞**(「直接生成/作成してください」+「説明は不要」)が必須で、そうでないと Gemini にルーティングを誤られます。9:16 の縦型動画やスタイルテンプレートを使う場合は `--use-tool` を付けてください。`--dewatermark` を使うには一度だけヘルパーのインストールが必要です(`node scripts/setup-gwr.mjs`)。未インストールのままだとフラグは黙ってスキップされます(結果 JSON は `dewm:false`)。ステップごとのコマンドチェーンと全スクリプトの使い方は [`scripts/README.md`](scripts/README.md) にあります。
 
 ## ⚠️ リスクと免責事項(必読)
 

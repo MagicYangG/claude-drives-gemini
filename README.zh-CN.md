@@ -38,10 +38,10 @@ cd ~/.claude/skills/claude-drives-gemini && node setup/init.mjs   # 探测 Chrom
 4. **出活**:对 Claude 说「用 Gemini 生成一张…」即可;或直接一条命令:
 
 ```bash
-node scripts/gemini-gen.mjs image "直接生成一张图片:雨后黄昏的江南古镇石桥,水彩风格" out/图.png --dewatermark
+node scripts/gemini-gen.mjs image "直接生成一张图片:雨后黄昏的江南古镇石桥,水彩风格;不要解释" out/图.png --dewatermark
 ```
 
-视频/音乐同款,把 `image` 换成 `video` / `music`。提示词**必须带明确生成动词**(「直接生成/制作…」+「不要解释」),否则会被 Gemini 误路由;视频要 9:16 竖屏或风格模板时加 `--use-tool`。分步命令链与全部脚本用法见 [`scripts/README.md`](scripts/README.md)。
+视频/音乐同款,把 `image` 换成 `video` / `music`。提示词**必须带明确生成动词**(「直接生成/制作…」+「不要解释」),否则会被 Gemini 误路由;视频要 9:16 竖屏或风格模板时加 `--use-tool`。`--dewatermark` 需要一次性装好去水印助手——`node scripts/setup-gwr.mjs`——否则该参数会被静默跳过(回执 JSON 里 `dewm:false`)。分步命令链与全部脚本用法见 [`scripts/README.md`](scripts/README.md)。
 
 ## ⚠️ 风险与免责(必读)
 

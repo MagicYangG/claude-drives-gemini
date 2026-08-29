@@ -4,7 +4,7 @@
 //   proxy(向后兼容):          node gemini-wait.mjs <tid> <video|music|image> [maxSec=300] [http://localhost:3456] [failBase=0]
 // failBase:忽略页面里前 N 条「无法生成」失败文案(同 tab 重发场景,传上一轮 GENFAIL 的 fc)。
 // 退出码: 0=READY  2=超时(末行 `TIMEOUT gen=true|false`,gen=true 表示仍在生成勿重提交)
-//         3=异常 4=ws错误  5=Gemini 明确拒绝(末行 `GENFAIL fc=N`,可安全重发——未产出不烧额度)
+//         3=异常(含连续 eval 失败=tab 已死,末行 DEADTAB) 4=ws错误  5=Gemini 明确拒绝(末行 `GENFAIL fc=N`,可安全重发——未产出不烧额度)
 import { labels, rx } from './config.mjs';
 const [TID, TYPE, MAXSEC, TRANSPORT, FAILBASE] = process.argv.slice(2);
 const max = parseInt(MAXSEC || '300', 10);
@@ -24,7 +24,7 @@ const judge = s => { // 返回 'ready' | 'genfail:N' | null
   if (!s) return null;
   if (typeof s.gen === 'boolean') lastGen = s.gen;
   if (s.ready) return 'ready';
-  if (typeof s.fc === 'number' && s.fc > failBase) return 'genfail:' + s.fc;
+  if (typeof s.fc === 'number' && s.fc > failBase && !s.gen) return 'genfail:' + s.fc; // 仍显示"正在生成"时不判拒绝,防在途误重发烧双倍额度
   return null;
 };
 
@@ -39,10 +39,11 @@ if (useWs) {
     try {
       const a = await raw('Target.attachToTarget', { targetId: TID, flatten: true }, false); sid = a.sessionId;
       await raw('Runtime.enable', {}, true);
-      const t0 = Date.now();
+      const t0 = Date.now(); let errStreak = 0;
       while ((Date.now() - t0) / 1000 < max) {
         let s; try { const r = await raw('Runtime.evaluate', { expression: expr, returnByValue: true, awaitPromise: true }, true); s = JSON.parse(r.result.value); } catch (e) { s = { err: e.message }; }
         console.log(Math.round((Date.now() - t0) / 1000) + 's', JSON.stringify(s));
+        if (s && s.err) { if (++errStreak >= 3) { console.log('DEADTAB ' + String(s.err).slice(0, 80)); try { ws.close(); } catch (_) {} return done(3); } } else errStreak = 0; // tab 死了快速失败,别空转到超时
         const j = judge(s);
         if (j === 'ready') { console.log('READY'); try { ws.close(); } catch (_) {} return done(0); }
         if (j && j.startsWith('genfail')) { console.log('GENFAIL fc=' + j.split(':')[1]); try { ws.close(); } catch (_) {} return done(5); }
@@ -55,10 +56,11 @@ if (useWs) {
   // ── proxy /eval 轮询(向后兼容)──
   const base = TRANSPORT || 'http://localhost:3456';
   (async () => {
-    const t0 = Date.now();
+    const t0 = Date.now(); let errStreak = 0;
     while ((Date.now() - t0) / 1000 < max) {
       let s; try { const r = await fetch(base + '/eval?target=' + TID, { method: 'POST', body: expr, signal: AbortSignal.timeout(10000) }); s = JSON.parse((await r.json()).value); } catch (e) { s = { err: e.message }; }
       console.log(Math.round((Date.now() - t0) / 1000) + 's', JSON.stringify(s));
+      if (s && s.err) { if (++errStreak >= 3) { console.log('DEADTAB ' + String(s.err).slice(0, 80)); return done(3); } } else errStreak = 0;
       const j = judge(s);
       if (j === 'ready') { console.log('READY'); return done(0); }
       if (j && j.startsWith('genfail')) { console.log('GENFAIL fc=' + j.split(':')[1]); return done(5); }

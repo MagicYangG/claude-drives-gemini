@@ -8,10 +8,9 @@
 //     wait 超时但仍在生成 → 只延长等待,绝不重提交;下载失败 → 产物已在页面,同 tab 重试下载,仍败保留 tab 供补捞。
 import { execFileSync, spawn } from 'node:child_process';
 import { readFileSync, existsSync } from 'node:fs';
-import { homedir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { PORT, LAUNCHER as CFG_LAUNCHER, labels, rx, mainChromeUserData } from './config.mjs';
+import { PORT, LAUNCHER as CFG_LAUNCHER, DOWNLOAD_DIR, GWR_DIR, labels, rx, mainChromeUserData, sysDownloadDir } from './config.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const S = n => join(here, n);
@@ -35,6 +34,7 @@ const run = (a, opts = {}) => execFileSync('node', a, { encoding: 'utf8', maxBuf
 const runCap = a => { try { return { code: 0, out: run(a) }; } catch (e) { return { code: e.status == null ? -1 : e.status, out: String(e.stdout || '') }; } };
 const log = m => process.stderr.write('[gen] ' + m + '\n'); // 过程走 stderr,stdout 只留最终 JSON
 const sleep = ms => new Promise(r => setTimeout(r, ms));
+if (DEWM && !existsSync(join(GWR_DIR, 'bin', 'gwr.mjs'))) log('警告: gwr 未装,--dewatermark 本次无效(产物带角标)——一次性安装: node scripts/setup-gwr.mjs');
 
 async function alive() { try { const r = await fetch('http://127.0.0.1:' + PORT + '/json/version', { signal: AbortSignal.timeout(2500) }); return r.ok; } catch { return false; } }
 async function preflight() {
@@ -61,7 +61,7 @@ function autoDownloadDir(wsUrl) {
       if (d && existsSync(d)) return d;
     }
   } catch { }
-  return join(homedir(), 'Downloads');
+  return sysDownloadDir();
 }
 
 function closeTab(WS, TID) {
@@ -72,7 +72,7 @@ function closeTab(WS, TID) {
   try {
     await preflight();
     const WS = (val('--ws', '') || run([S('gemini-wsurl.mjs')])).trim(); WSV = WS;
-    const DL = val('--downloadDir', '') || autoDownloadDir(WS);
+    const DL = val('--downloadDir', '') || DOWNLOAD_DIR || autoDownloadDir(WS); // 与 gemini-download 同优先级:显式 > config > 自动判断
     log('WS ok, downloadDir=' + DL);
     const submit = (TID, useTool) => { const a = [S('gemini-select-type.mjs'), WS, TID, TYPE, PROMPT]; if (useTool) a.push('--use-tool'); return runCap(a); };
     const submitted = sub => sub.code === 0 || /(^|\n)SUBMITTED/.test(sub.out); // 输出含 SUBMITTED 即已发出——即便退出码异常也绝不再重提交

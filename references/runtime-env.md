@@ -14,13 +14,13 @@
 - **⚠ 代理节点坑**:`gemini.google.com` 通 ≠ `accounts.google.com` 通!部分代理节点只通前者 → 登录页打不开。登录前确认 accounts 能过代理(不行就换节点/切全局);出图本身只需 gemini 通。
 
 ## 代理(不做前置自检)
-- 专用 Chrome 靠启动器里的 `--proxy-server`(config `proxy`,默认 `http://127.0.0.1:7897`)访问 Google;代理常开时无需任何检查。网络可直连 Google 的环境把 config `proxy` 留空即可(启动器不带代理参数)。
+- 专用 Chrome 靠启动器里的 `--proxy-server`(config `proxy`,**默认留空=直连**;需要代理时形如 `http://127.0.0.1:7897`)访问 Google;代理常开时无需任何检查。网络可直连 Google 的环境把 config `proxy` 留空即可(启动器不带代理参数)。
 - **页面 ERR/空白、gemini 打不开** → 多半本地代理没开:提醒用户启动代理后重试;仍不通(代理失效/没选对节点)→ 停,报告用户,勿盲目重试。
 - 判别:editor 迟不就绪时探一次 tab——accounts/登录字样=登录问题;页面 ERR/空白=代理问题。
 
 ## ws / 下载目录
 - ws 地址必须带 GUID:`ws://127.0.0.1:<port>/devtools/browser/<GUID>`,由 `gemini-wsurl.mjs` 走 `/json/version` 实时取(`DevToolsActivePort` 文件会留旧 GUID);专用端口优先,主 Chrome 仅兜底。无需任何 CDP 中间代理进程。
-- 下载目录:专用 profile 落**系统默认下载目录**(如 `~/Downloads`);主 Chrome 落其 Preferences 里配置的自定义目录。`gemini-gen` 与裸跑的 `gemini-download`/`gemini-image-hires` 都按 ws 端口自动判断(连专用 Chrome 自动落系统默认目录);自定义了下载目录才需显式 `--downloadDir`。"下载没出来"先查真实目录,别想当然。
+- 下载目录:专用 profile 落**系统默认下载目录**(Windows/macOS `~/Downloads`;Linux 按 xdg-user-dirs 解析,zh_CN 桌面是 `~/下载`,代码已自动处理);主 Chrome 落其 Preferences 里配置的自定义目录。`gemini-gen` 与裸跑的 `gemini-download`/`gemini-image-hires` 取目录优先级一致:显式 `--downloadDir` > config `downloadDir` > 按 ws 端口自动判断。"下载没出来"先查真实目录,别想当然。
 
 ## 分步自检(调试用;gemini-gen preflight 已内置等价逻辑)
 1. `curl -s --noproxy '*' http://127.0.0.1:9223/json/version` 有 `webSocketDebuggerUrl` = 活着。⚠ Git Bash 的 curl 会走代理环境变量,查 localhost 必带 `--noproxy '*'`(否则空返回=假阴性);Node fetch/PowerShell 不走代理可直连。

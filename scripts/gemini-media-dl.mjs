@@ -1,6 +1,6 @@
 // 取 <video> 签名直链字节落盘(视频/音乐通用;Lyria 音乐也是 <video>)。
 // GUID ws 取 cookie → curl 走 VPN 代理下载(绕 CORS/拦截器/被墙)。cookie 不进上下文。
-// 用法: node gemini-media-dl.mjs <wsUrl> <targetId> <outFile> [proxy=http://127.0.0.1:7897]
+// 用法: node gemini-media-dl.mjs <wsUrl> <targetId> <outFile> [proxy](默认取 config,空=直连)
 import {execFileSync} from 'node:child_process';
 import {readFileSync,writeFileSync,unlinkSync} from 'node:fs';
 import {tmpdir} from 'node:os';

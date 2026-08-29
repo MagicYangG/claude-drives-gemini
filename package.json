@@ -1,6 +1,6 @@
 {
   "name": "claude-drives-gemini",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Drive a logged-in Gemini Pro web session via CDP to generate images/video/music from Claude Code — media lands on disk, bytes never enter the agent context.",
   "type": "module",
   "engines": {

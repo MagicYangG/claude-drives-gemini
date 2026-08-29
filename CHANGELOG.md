@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.0.2] - 2026-08-28
+
+真机端到端回归(会员恢复后首跑)+ 21-agent 对抗审查产出的一揽子修复。
+
+- **修 Gemini 新拒绝话术失配**(真机实锤):「无法提供这方面的帮助/程序代码的局限」(误路由拒绝)与「出现了一些问题」(服务端生成失败)不在 `locales` 失败库里,wait 认不出明确拒绝,「拒绝→同 tab 安全重发」救援链失灵、傻等到超时。zh-CN 补 3 条实锤,en 补对应猜测。
+- **修 config `downloadDir` 在一条龙路径失效**(P1):`gemini-gen` 不读 config 的 DOWNLOAD_DIR、恒以自动判断结果显式传给 `gemini-download`,配置项形同虚设(OneDrive 重定向下载目录用户必失败)。统一优先级:显式 `--downloadDir` > config > 自动判断。
+- **修 `setup-gwr` 在 Windows 必死**(P1):`execFileSync('npm')` ENOENT(Windows 只有 npm.cmd,Node≥22 spawn .cmd 须 shell)。`--dewatermark` 助手此前在唯一实测平台装不上。
+- **修 snap Chromium 必启动失败**(P1):AppArmor 拒写 `$HOME` 下点开头 profile 目录,原味 Ubuntu 必中。init 检测到 snap 自动改用可见目录,显式点目录直接报错;sh 启动器报错不再吞进 /dev/null(落 /tmp 日志)。
+- **修启动器「端口绑不上」死局**(真机实锤):登录窗关掉后 Chrome 后台驻留继续占 profile,start 启动器永远绑不上调试口。启动器在端口死时先收割本 profile 的残留 Chrome 进程(不碰主浏览器)。
+- **修 Linux 下载目录写死 ~/Downloads**:改按 xdg-user-dirs 解析(zh_CN 桌面是 ~/下载)。
+- **加固**:init 模板注入校验补换行与 `%`;`gemini-open` 失败/超时路径收割已建 tab(防孤儿);`gemini-wait` 连续 3 次 eval 失败判 DEADTAB 快速失败(exit 3),拒绝判定加 `!gen` 门(在途生成不误重发);`gemini-gen` 在 gwr 未装时对 `--dewatermark` 给出显式警告(此前静默 `dewm:false`)。
+- **文档**:README 四语补 `setup-gwr` 一次性安装说明;zh-CN 示例提示词补「不要解释」(对齐自家契约);runtime-env 修正 proxy 默认值表述(默认直连非 7897)与下载目录优先级;package.json 版本号跟上 tag。
+
 ## [1.0.1] - 2026-08-16
 
 - **修 smoke 假绿灯**:`gemini-open` 即使编辑器未水合也退 0(设计如此,留给下游重试),而 smoke 只看退出码就报 `tab: ok(editor 就绪)`——登录过期的新用户会拿到假的通过。改为自己复验编辑器存在,不就绪时明确报 `EDITOR-NOT-READY(登录过期→跑 login 启动器,或代理不通)` 并计入总结论。

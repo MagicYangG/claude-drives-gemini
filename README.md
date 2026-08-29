@@ -41,7 +41,7 @@ cd ~/.claude/skills/claude-drives-gemini && node setup/init.mjs   # detect Chrom
 node scripts/gemini-gen.mjs image "Generate an image directly: a stone bridge in a riverside town at dusk after rain, watercolor style. No explanation." out/image.png --dewatermark
 ```
 
-Video and music work the same way — swap `image` for `video` / `music`. The prompt **must contain an explicit generation verb** ("generate/create … directly" + "no explanation"), otherwise Gemini misroutes it. Add `--use-tool` for 9:16 vertical video or the built-in style templates. Step-by-step command chains and the full script reference live in [`scripts/README.md`](scripts/README.md).
+Video and music work the same way — swap `image` for `video` / `music`. The prompt **must contain an explicit generation verb** ("generate/create … directly" + "no explanation"), otherwise Gemini misroutes it. Add `--use-tool` for 9:16 vertical video or the built-in style templates. `--dewatermark` needs a one-time helper install — `node scripts/setup-gwr.mjs` — otherwise the flag is skipped silently (the result JSON reports `dewm:false`). Step-by-step command chains and the full script reference live in [`scripts/README.md`](scripts/README.md).
 
 ## ⚠️ Risks and disclaimer (please read)
 

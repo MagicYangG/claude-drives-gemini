@@ -4,9 +4,8 @@
 // 取代旧 cookie+curl(那是被去水印扩展拦下载逼出来的绕路;专用 profile 无扩展→原生下载即可)。
 import { execFileSync } from 'node:child_process';
 import { readFileSync, existsSync, readdirSync, statSync, copyFileSync, mkdirSync } from 'node:fs';
-import { homedir } from 'node:os';
 import { dirname, join } from 'node:path';
-import { DOWNLOAD_DIR, GWR_DIR, labels, rx, mainChromeUserData } from './config.mjs';
+import { DOWNLOAD_DIR, GWR_DIR, labels, rx, mainChromeUserData, sysDownloadDir } from './config.mjs';
 
 const args = process.argv.slice(2);
 const [WSURL, TID, TYPE, OUT] = args;
@@ -22,10 +21,10 @@ function resolveDownloadDir() {
     // 按 ws 端口判断:连的不是主 Chrome(专用 profile)→ 落系统默认 ~/Downloads,别读主 Chrome 的 Preferences
     const mainPort = parseInt((readFileSync(join(PROFILE, 'DevToolsActivePort'), 'utf8').split(/\r?\n/)[0] || '').trim(), 10);
     const wsPort = parseInt((String(WSURL).match(/^ws:\/\/[^:/]+:(\d+)\//) || [])[1], 10);
-    if (!mainPort || wsPort !== mainPort) return join(homedir(), 'Downloads');
+    if (!mainPort || wsPort !== mainPort) return sysDownloadDir();
     const pref = JSON.parse(readFileSync(join(PROFILE, 'Default', 'Preferences'), 'utf8')); const d = pref && pref.download && pref.download.default_directory; if (d && existsSync(d)) return d;
   } catch { }
-  return join(homedir(), 'Downloads');
+  return sysDownloadDir();
 }
 const DLDIR = resolveDownloadDir();
 const EXTRE = { image: /\.(png|jpe?g|webp)$/i, video: /\.(mp4|webm|mov)$/i, music: /\.(mp3|m4a|wav|mp4)$/i }[TYPE] || /./; // 按类型白名单,防并发无关文件被错认(2026-07-19)

@@ -41,7 +41,7 @@ cd ~/.claude/skills/claude-drives-gemini && node setup/init.mjs   # Chrome 탐�
 node scripts/gemini-gen.mjs image "이미지를 바로 생성해줘: 비 갠 해질녘 물의 도시 돌다리, 수채화 스타일. 설명은 필요 없어." out/image.png --dewatermark
 ```
 
-영상·음악도 동일하게 `image`를 `video` / `music`으로 바꾸면 됩니다. 프롬프트에는 **명확한 생성 동사**("바로 생성/제작해줘" + "설명은 필요 없어")가 반드시 있어야 하며, 그렇지 않으면 Gemini가 잘못 라우팅합니다. 9:16 세로 영상이나 스타일 템플릿이 필요하면 `--use-tool`을 붙이세요. 단계별 명령 체인과 전체 스크립트 사용법은 [`scripts/README.md`](scripts/README.md)에 있습니다.
+영상·음악도 동일하게 `image`를 `video` / `music`으로 바꾸면 됩니다. 프롬프트에는 **명확한 생성 동사**("바로 생성/제작해줘" + "설명은 필요 없어")가 반드시 있어야 하며, 그렇지 않으면 Gemini가 잘못 라우팅합니다. 9:16 세로 영상이나 스타일 템플릿이 필요하면 `--use-tool`을 붙이세요. `--dewatermark`는 최초 1회 헬퍼 설치가 필요합니다(`node scripts/setup-gwr.mjs`) — 설치하지 않으면 플래그가 조용히 무시됩니다(결과 JSON에 `dewm:false`). 단계별 명령 체인과 전체 스크립트 사용법은 [`scripts/README.md`](scripts/README.md)에 있습니다.
 
 ## ⚠️ 리스크 및 면책(필독)
 

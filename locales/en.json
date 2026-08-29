@@ -8,7 +8,7 @@
   "modePro": ["Pro"],
   "modeThinking": ["Thinking", "Extended thinking"],
   "generating": ["Generating", "Creating your"],
-  "genFail": ["can['’]?t generate", "cannot generate", "unable to generate", "can['’]?t create", "unable to create"],
+  "genFail": ["can['’]?t generate", "cannot generate", "unable to generate", "can['’]?t create", "unable to create", "can['’]?t help with", "unable to help with", "something went wrong[^\n]{0,30}try again"],
   "dlImage": ["Download full", "full size"],
   "dlVideo": ["Download video"],
   "dlMusic": ["Download music", "Download audio", "Download track"],

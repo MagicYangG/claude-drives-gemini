@@ -11,6 +11,7 @@ try{
   const proxyArgs=PROXY?['-c','http.proxy='+PROXY,'-c','https.proxy='+PROXY]:[];
   execFileSync('git',[...proxyArgs,'clone','--depth','1','https://github.com/GargantuaX/gemini-watermark-remover.git',DIR],{stdio:'inherit'});
   console.log('npm install sharp mediabunny ...');
-  execFileSync('npm',['install','sharp','mediabunny'],{stdio:'inherit',cwd:DIR});
+  // Windows 上没有裸 'npm' 可执行文件(只有 npm.cmd),且 Node>=22 spawn .cmd 必须 shell:true,否则 ENOENT
+  execFileSync(process.platform==='win32'?'npm.cmd':'npm',['install','sharp','mediabunny'],{stdio:'inherit',cwd:DIR,shell:process.platform==='win32'});
   console.log(existsSync(DIR+'/bin/gwr.mjs')?'gwr 安装完成: '+DIR:'WARN: bin/gwr.mjs 仍缺失');
 }catch(e){console.log('SETUP-ERR',e.message);console.log('手动: 见 references/dewatermark.md');process.exit(1);}
