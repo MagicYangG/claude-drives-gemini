@@ -6,6 +6,8 @@ A Claude Code skill: let your AI agent drive the Chrome where **your Google AI P
 
 **Make the Google Gemini subscription you already pay for do extra work.**
 
+![demo: one command generates a 2816×1536 image through your own Gemini subscription](docs/demo.gif)
+
 ## Features
 
 - **One command, end to end**: auto-launch the dedicated Chrome → ensure Pro + Extended Thinking → submit the prompt → stage-aware wait → native download, returning a single line of JSON.

@@ -6,6 +6,8 @@ Claude Code 스킬: **Google AI Pro에 이미 로그인된 Chrome**을 AI 에이
 
 **이미 결제한 Google Gemini 구독을 추가 생산력으로 바꾸세요.**
 
+![데모: 명령 한 줄로 내 Gemini 구독을 통해 2816×1536 이미지를 생성](docs/demo.gif)
+
 ## 특징
 
 - **명령 한 줄로 처음부터 끝까지**: 전용 Chrome 자동 실행 → Pro + 확장 사고 모드 확인 → 프롬프트 전송 → 단계 인식 대기 → 네이티브 다운로드. 반환값은 JSON 한 줄.
