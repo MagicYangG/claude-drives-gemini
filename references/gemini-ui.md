@@ -25,7 +25,7 @@
 1. **重新探测**(只读小 JSON):`node scripts/cdp-eval.mjs <tid> "[...new Set([...document.querySelectorAll('button,[role=button],[role=menuitemcheckbox]')].map(b=>(b.getAttribute('aria-label')||'').trim()).filter(Boolean))]"`
 2. **语义模糊匹配**:按功能找(含 "视频/图片/音乐/下载"),容忍改名,不依赖 CSS class/hash;先 discover 再 act。
 3. **回写进化**:跑通后把新文案更新进 `locales/*.json`(选择器结构变了才改本文件+scripts),并刷本文件日期。
-4. 图片去水印失灵 → `references/dewatermark.md` 兜底。
+4. 水印相关(官方开关位置/SynthID/无开关账号兜底)→ `references/dewatermark.md`。
 
 ## 交互机制要点(实测定论)
 

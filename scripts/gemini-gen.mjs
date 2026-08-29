@@ -1,5 +1,6 @@
-// 一条龙出图/视频/乐(2026-07-19 v2):preflight→open→直发提交→wait(阶段感知重试)→原生下载(→gwr)。只回一行 JSON;媒体字节绝不进上下文。
-// 用法: node gemini-gen.mjs <image|video|music> "<prompt>" <outFile> [--dewatermark] [--use-tool] [--downloadDir DIR] [--maxSec N] [--ws WS] [--keep] [--no-preflight]
+// 一条龙出图/视频/乐(2026-07-19 v2):preflight→open→直发提交→wait(阶段感知重试)→原生下载。只回一行 JSON;媒体字节绝不进上下文。
+// 用法: node gemini-gen.mjs <image|video|music> "<prompt>" <outFile> [--use-tool] [--downloadDir DIR] [--maxSec N] [--ws WS] [--keep] [--no-preflight]
+//   水印:Gemini 已官方支持关闭可见水印(网页 设置→媒体水印→关闭,SynthID 隐形水印仍在)。旧 --dewatermark 参数已废弃,传了会被忽略并提示。
 //   默认纯提示词直发(三模态 2026-07-18 真机实测可自动路由;提示词必须带明确生成动词,见 SKILL.md 提示词契约)。
 //   --use-tool 走 + 菜单勾选(要视频宽高比/风格模板面板时);视频直发被连拒 2 次会自动降级工具路径再试(新 tab;拒绝=零产出,量额安全)。
 //   preflight(默认开;--ws 或 --no-preflight 跳过):查专用 Chrome 9223,没起自动跑启动器拉起——Claude 出活只需这一条命令。
@@ -10,7 +11,7 @@ import { execFileSync, spawn } from 'node:child_process';
 import { readFileSync, existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { PORT, LAUNCHER as CFG_LAUNCHER, DOWNLOAD_DIR, GWR_DIR, labels, rx, mainChromeUserData, sysDownloadDir } from './config.mjs';
+import { PORT, LAUNCHER as CFG_LAUNCHER, DOWNLOAD_DIR, labels, rx, mainChromeUserData, sysDownloadDir } from './config.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const S = n => join(here, n);
@@ -19,7 +20,7 @@ const [TYPE, PROMPT, OUT] = args;
 const flag = n => args.includes(n);
 const val = (n, d) => { const i = args.indexOf(n); return i >= 0 ? args[i + 1] : d; };
 if (!['image', 'video', 'music'].includes(TYPE) || !PROMPT || !OUT) {
-  console.log('用法: node gemini-gen.mjs <image|video|music> "<prompt>" <out> [--dewatermark] [--use-tool] [--downloadDir DIR] [--maxSec N] [--ws WS] [--keep] [--no-preflight]');
+  console.log('用法: node gemini-gen.mjs <image|video|music> "<prompt>" <out> [--use-tool] [--downloadDir DIR] [--maxSec N] [--ws WS] [--keep] [--no-preflight]');
   process.exit(1);
 }
 const MAXSEC = parseInt(val('--maxSec', TYPE === 'image' ? '180' : '300'), 10); // Pro+扩展思考的思考期比 Flash 慢数倍(图实测 ~150s+),120s 会误杀
@@ -34,7 +35,7 @@ const run = (a, opts = {}) => execFileSync('node', a, { encoding: 'utf8', maxBuf
 const runCap = a => { try { return { code: 0, out: run(a) }; } catch (e) { return { code: e.status == null ? -1 : e.status, out: String(e.stdout || '') }; } };
 const log = m => process.stderr.write('[gen] ' + m + '\n'); // 过程走 stderr,stdout 只留最终 JSON
 const sleep = ms => new Promise(r => setTimeout(r, ms));
-if (DEWM && !existsSync(join(GWR_DIR, 'bin', 'gwr.mjs'))) log('警告: gwr 未装,--dewatermark 本次无效(产物带角标)——一次性安装: node scripts/setup-gwr.mjs');
+if (DEWM) log('提示: --dewatermark 已废弃并忽略——Gemini 已官方支持关水印(网页 设置→媒体水印→关闭),关闭后产物本就无可见水印');
 
 async function alive() { try { const r = await fetch('http://127.0.0.1:' + PORT + '/json/version', { signal: AbortSignal.timeout(2500) }); return r.ok; } catch { return false; } }
 async function preflight() {
@@ -76,7 +77,7 @@ function closeTab(WS, TID) {
     log('WS ok, downloadDir=' + DL);
     const submit = (TID, useTool) => { const a = [S('gemini-select-type.mjs'), WS, TID, TYPE, PROMPT]; if (useTool) a.push('--use-tool'); return runCap(a); };
     const submitted = sub => sub.code === 0 || /(^|\n)SUBMITTED/.test(sub.out); // 输出含 SUBMITTED 即已发出——即便退出码异常也绝不再重提交
-    const mkDl = tid => { const a = [S('gemini-download.mjs'), WS, tid, TYPE, OUT, '--downloadDir', DL]; if (DEWM) a.push('--dewatermark'); return a; };
+    const mkDl = tid => [S('gemini-download.mjs'), WS, tid, TYPE, OUT, '--downloadDir', DL];
     let predl = null; // 超时"最后一搏"若已落盘,存这里跳过下载段重跑
 
     // 模式序列:显式 --use-tool 只走工具;视频直发被连拒 2 次自动降级工具路径(实测直发视频偶发连拒、工具路径稳;拒绝=零产出,量额安全)
@@ -145,7 +146,7 @@ function closeTab(WS, TID) {
     const dj = dl.out.split('\n').find(l => l.startsWith('DONEJSON '));
     const legacy = dl.out.split('\n').find(l => l.startsWith('WROTE'));
     let res;
-    if (dj) { const o = JSON.parse(dj.slice(9)); res = { ok: true, type: TYPE, file: o.file, dims: o.dims || null, mb: o.mb, dewm: !!o.dewm, resubmits: totalResubmits, seconds: sec }; }
+    if (dj) { const o = JSON.parse(dj.slice(9)); res = { ok: true, type: TYPE, file: o.file, dims: o.dims || null, mb: o.mb, resubmits: totalResubmits, seconds: sec }; }
     else if (legacy) { const m = legacy.match(/^WROTE\s+(.+?)\s+(\S*)\s+([\d.]+)MB/); res = m ? { ok: true, type: TYPE, file: m[1], dims: m[2] || null, mb: parseFloat(m[3]), resubmits: totalResubmits, seconds: sec } : { ok: false, type: TYPE, stage: 'download', raw: legacy.slice(0, 200), seconds: sec }; }
     else res = { ok: false, type: TYPE, stage: 'download', raw: dl.out.slice(-200), seconds: sec };
     if (res.ok && modeVal) res.mode = modeVal.replace(/^打开模式选择器[,，]?\s*当前模式为\s*/, '').replace(/[“”"]/g, ''); // 回执实际生成模式,质量可见

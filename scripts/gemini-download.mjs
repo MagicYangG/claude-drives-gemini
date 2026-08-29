@@ -1,17 +1,16 @@
-// 点 Gemini 原生下载钮落盘(图/视频/乐通用)→ 轮询下载目录 → 可选 gwr 去水印(仅图)。字节不进上下文,只回路径/尺寸。GUID ws 全程。
-// 用法: node gemini-download.mjs <wsUrl> <tid> <image|video|music> <out> [--dewatermark] [--downloadDir DIR] [--profileDir DIR]
+// 点 Gemini 原生下载钮落盘(图/视频/乐通用)→ 轮询下载目录。字节不进上下文,只回路径/尺寸。GUID ws 全程。
+// 用法: node gemini-download.mjs <wsUrl> <tid> <image|video|music> <out> [--downloadDir DIR] [--profileDir DIR]
+// 水印:官方开关(设置→媒体水印→关闭)已取代旧 gwr 去角标链;旧 --dewatermark 参数被忽略。
 // 机制:image=点「下载完整尺寸的图片」直接落盘;music/video=点「下载音乐作品/下载视频」常弹格式菜单→真鼠标自动选(乐=纯音频MP3;视频=含音频MP4)。无菜单则直接下载。
 // 取代旧 cookie+curl(那是被去水印扩展拦下载逼出来的绕路;专用 profile 无扩展→原生下载即可)。
-import { execFileSync } from 'node:child_process';
 import { readFileSync, existsSync, readdirSync, statSync, copyFileSync, mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
-import { DOWNLOAD_DIR, GWR_DIR, labels, rx, mainChromeUserData, sysDownloadDir } from './config.mjs';
+import { DOWNLOAD_DIR, labels, rx, mainChromeUserData, sysDownloadDir } from './config.mjs';
 
 const args = process.argv.slice(2);
 const [WSURL, TID, TYPE, OUT] = args;
 const flag = n => args.includes(n);
 const val = n => { const i = args.indexOf(n); return i >= 0 ? args[i + 1] : null; };
-const DEWM = flag('--dewatermark');
 const PROFILE = val('--profileDir') || mainChromeUserData();
 
 function resolveDownloadDir() {
@@ -94,14 +93,9 @@ ws.addEventListener('open', async () => {
     if (fext && oext && fext !== oext) { outPath = OUT.slice(0, OUT.length - oext.length) + fext; console.log('EXT-FIX ' + oext + '→' + fext); }
     mkdirSync(dirname(outPath), { recursive: true });
     copyFileSync(found, outPath);
-    let dewm = false;
-    if (DEWM && TYPE === 'image') {
-      const clean = outPath.replace(/\.(png|jpg|jpeg)$/i, '') + '.clean.png';
-      try { execFileSync('node', [join(GWR_DIR, 'bin', 'gwr.mjs'), 'remove', outPath, '--output', clean, '--json'], { stdio: 'ignore' }); if (existsSync(clean)) { copyFileSync(clean, outPath); dewm = true; } } catch (e) { console.log('GWR-FAIL', e.message); }
-    }
     const buf = readFileSync(outPath);
-    console.log('WROTE', outPath, TYPE === 'image' ? pngDims(buf) : '', (buf.length / 1024 / 1024).toFixed(2) + 'MB', 'from=' + found, 'dewm=' + dewm);
-    console.log('DONEJSON ' + JSON.stringify({ file: outPath, dims: TYPE === 'image' ? pngDims(buf) : '', mb: +(buf.length / 1024 / 1024).toFixed(2), from: found, dewm })); // 机读行,路径含空格也不怕(gen 优先解析)
+    console.log('WROTE', outPath, TYPE === 'image' ? pngDims(buf) : '', (buf.length / 1024 / 1024).toFixed(2) + 'MB', 'from=' + found);
+    console.log('DONEJSON ' + JSON.stringify({ file: outPath, dims: TYPE === 'image' ? pngDims(buf) : '', mb: +(buf.length / 1024 / 1024).toFixed(2), from: found })); // 机读行,路径含空格也不怕(gen 优先解析)
     process.exit(0);
   } catch (e) { try { ws.close(); } catch { } console.log('ERR', e.message); process.exit(3); }
 });

@@ -1,11 +1,7 @@
-// 出图后取无损 PNG(canvas→toDataURL,GUID ws returnByValue 直接进 node,不进上下文),可选 gwr 去水印。
-// 用法: node gemini-image-grab.mjs <wsUrl> <tid> <outFile> [--dewatermark]
-import {execFileSync} from 'node:child_process';
-import {writeFileSync,existsSync,unlinkSync} from 'node:fs';
-import {GWR_DIR} from './config.mjs';
-const [WSURL,TID,OUT,...flags]=process.argv.slice(2);
-const deW=flags.includes('--dewatermark');
-const GWR=GWR_DIR+'/bin/gwr.mjs';
+// 出图后取无损 PNG(canvas→toDataURL,GUID ws returnByValue 直接进 node,不进上下文)。
+// 用法: node gemini-image-grab.mjs <wsUrl> <tid> <outFile>
+import {writeFileSync} from 'node:fs';
+const [WSURL,TID,OUT]=process.argv.slice(2);
 const ws=new WebSocket(WSURL);let id=0;const pending=new Map();let sid=null;
 const raw=(m,p,s)=>new Promise((res,rej)=>{const i=++id;pending.set(i,{res,rej});ws.send(JSON.stringify(s?{id:i,method:m,params:p,sessionId:sid}:{id:i,method:m,params:p}));});
 const cmd=(m,p)=>raw(m,p,true);
@@ -26,11 +22,7 @@ ws.addEventListener('open',async()=>{try{
   if(!dataUrl){console.log('NOIMG');process.exit(1);}
   const buf=Buffer.from(dataUrl.split(',')[1],'base64');
   const dim=buf.length>24?buf.readUInt32BE(16)+'x'+buf.readUInt32BE(20):'?';
-  if(deW&&existsSync(GWR)){
-    const tmp=OUT+'.raw.png';writeFileSync(tmp,buf);
-    try{execFileSync('node',[GWR,'remove',tmp,'--output',OUT],{stdio:'ignore'});unlinkSync(tmp);console.log('WROTE(clean)',OUT,dim);}
-    catch(e){writeFileSync(OUT,buf);try{unlinkSync(tmp);}catch(_){}console.log('WROTE(raw, gwr失败)',OUT,dim);}
-  }else{writeFileSync(OUT,buf);console.log('WROTE'+(deW?'(raw, gwr缺)':'(raw)'),OUT,dim,(buf.length/1024/1024).toFixed(2)+'MB');}
+  writeFileSync(OUT,buf);console.log('WROTE',OUT,dim,(buf.length/1024/1024).toFixed(2)+'MB');
   process.exit(0);
 }catch(e){console.log('ERR',e.message);process.exit(3);}});
 setTimeout(()=>{console.log('TIMEOUT');process.exit(2);},90000);

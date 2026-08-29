@@ -3,12 +3,12 @@
 import { execFileSync } from 'node:child_process';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { PORT, LAUNCHER, LOGIN_LAUNCHER, PROXY, GWR_DIR, LOCALES, labels, rx } from './config.mjs';
+import { PORT, LAUNCHER, LOGIN_LAUNCHER, PROXY, LOCALES, labels, rx } from './config.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const S = n => join(here, n);
 const run = (a) => execFileSync('node', a, { encoding: 'utf8', maxBuffer: 1024 * 1024 });
-const res = { ok: false, node: process.version, port: PORT, proxy: PROXY || '(直连)', locales: LOCALES.join(','), launcher: LAUNCHER || null, loginLauncher: LOGIN_LAUNCHER || null, gwr: GWR_DIR, checks: {} };
+const res = { ok: false, node: process.version, port: PORT, proxy: PROXY || '(直连)', locales: LOCALES.join(','), launcher: LAUNCHER || null, loginLauncher: LOGIN_LAUNCHER || null, checks: {} };
 const fail = (why) => { res.error = why; console.log(JSON.stringify(res)); process.exit(1); };
 
 if (parseInt(process.version.slice(1), 10) < 22) fail('Node 需 >=22');

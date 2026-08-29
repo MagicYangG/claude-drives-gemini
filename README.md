@@ -8,9 +8,9 @@ A Claude Code skill: let your AI agent drive the Chrome where **your Google AI P
 
 ## Features
 
-- **One command, end to end**: auto-launch the dedicated Chrome → ensure Pro + Extended Thinking → submit the prompt → stage-aware wait → native download → optional watermark removal, returning a single line of JSON.
+- **One command, end to end**: auto-launch the dedicated Chrome → ensure Pro + Extended Thinking → submit the prompt → stage-aware wait → native download, returning a single line of JSON.
 - **Never burns quota twice**: only an explicit refusal triggers a safe resubmit; a timeout only extends the wait; a failed download only retries the download.
-- **Full resolution, lossless**: the native 2816×1536 original is downloaded directly; `--dewatermark` removes the visible corner logo with exact math (SynthID excluded — see the risk section).
+- **Full resolution, watermark-free**: the native 2816×1536 original is downloaded directly. Turn off the visible watermark once in Gemini itself (Settings → Media watermark → Off — an official Gemini feature) and every download comes out clean (SynthID excluded — see the risk section).
 
 ## Prerequisites
 
@@ -38,16 +38,16 @@ cd ~/.claude/skills/claude-drives-gemini && node setup/init.mjs   # detect Chrom
 4. **Create**: just tell Claude "generate an image with Gemini…", or run one command:
 
 ```bash
-node scripts/gemini-gen.mjs image "Generate an image directly: a stone bridge in a riverside town at dusk after rain, watercolor style. No explanation." out/image.png --dewatermark
+node scripts/gemini-gen.mjs image "Generate an image directly: a stone bridge in a riverside town at dusk after rain, watercolor style. No explanation." out/image.png
 ```
 
-Video and music work the same way — swap `image` for `video` / `music`. The prompt **must contain an explicit generation verb** ("generate/create … directly" + "no explanation"), otherwise Gemini misroutes it. Add `--use-tool` for 9:16 vertical video or the built-in style templates. `--dewatermark` needs a one-time helper install — `node scripts/setup-gwr.mjs` — otherwise the flag is skipped silently (the result JSON reports `dewm:false`). Step-by-step command chains and the full script reference live in [`scripts/README.md`](scripts/README.md).
+Video and music work the same way — swap `image` for `video` / `music`. The prompt **must contain an explicit generation verb** ("generate/create … directly" + "no explanation"), otherwise Gemini misroutes it. Add `--use-tool` for 9:16 vertical video or the built-in style templates. Don't want the visible watermark? Turn it off once in Gemini: Settings (gear, bottom-left) → Media watermark → Off — official feature, covers images/video/music. Step-by-step command chains and the full script reference live in [`scripts/README.md`](scripts/README.md).
 
 ## ⚠️ Risks and disclaimer (please read)
 
 - This project is **not affiliated with Google**. Automating the consumer Gemini web app **may violate Google's Terms of Service**, and your account (especially a paid subscription) could be restricted or banned. **Use at your own risk**; consider the official API as an alternative.
 - Built-in anti-abuse discipline: serial rather than parallel, throttled output, real keyboard/mouse events, quota respected — please do not turn it into a concurrent flood.
-- Watermarks: only the visible corner logo is removed (reverse alpha blending, mathematically lossless). **The SynthID provenance watermark is not removed and cannot be**, so generated content remains traceable.
+- Watermarks: the visible watermark is controlled by Gemini's own official setting (Settings → Media watermark). **The invisible SynthID provenance watermark is unaffected by that setting and cannot be removed**, so generated content remains traceable.
 
 ## Layout
 

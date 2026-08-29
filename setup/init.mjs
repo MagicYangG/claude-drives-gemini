@@ -1,5 +1,5 @@
 // 首跑向导(非交互,适合人和 Agent):探测 Chrome → 写 config.json → 按模板生成本机启动器 → 打印播种登录指引。幂等。
-// 用法: node setup/init.mjs [--port 9223] [--proxy http://127.0.0.1:7897] [--profile DIR] [--gwr DIR] [--chrome PATH] [--locales zh-CN,en]
+// 用法: node setup/init.mjs [--port 9223] [--proxy http://127.0.0.1:7897] [--profile DIR] [--chrome PATH] [--locales zh-CN,en]
 import { readFileSync, writeFileSync, existsSync, mkdirSync, chmodSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { dirname, join } from 'node:path';
@@ -30,7 +30,6 @@ try { if (existsSync(cfgPath)) cfg = JSON.parse(readFileSync(cfgPath, 'utf8')); 
 cfg.port = parseInt(val('--port', cfg.port || 9223), 10);
 cfg.proxy = val('--proxy', cfg.proxy !== undefined ? cfg.proxy : '');
 cfg.profileDir = val('--profile', cfg.profileDir || join(homedir(), '.gemini-automation-chrome'));
-cfg.gwrDir = val('--gwr', cfg.gwrDir || join(homedir(), 'gemini-watermark-remover'));
 cfg.locales = val('--locales', cfg.locales || 'zh-CN,en');
 const chrome = val('--chrome', cfg.chrome || detectChrome());
 if (!chrome) { console.log(JSON.stringify({ ok: false, error: '未找到 Chrome,可用 --chrome 指定完整路径' })); process.exit(1); }

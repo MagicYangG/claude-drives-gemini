@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.1.0] - 2026-08-29
+
+**去水印链路整体退役**:Gemini 已官方支持关闭可见水印([官方帮助](https://support.google.com/gemini/answer/17405358),网页 设置→媒体水印→关闭,一次设置覆盖图/视频/乐)。
+
+- **移除** gwr 工具链:`scripts/setup-gwr.mjs` 删除;`gemini-download`/`gemini-image-grab` 的 gwr 调用与 `--dewatermark` 处理移除;config 的 `gwrDir`/`GEMINI_STUDIO_GWR` 移除;smoke 不再报 gwr 字段。
+- **兼容**:`gemini-gen` 收到旧 `--dewatermark` 参数时提示"已废弃并忽略"后正常出活(不再中断);回执 JSON 不再含 `dewm` 字段。
+- **文档**:四语 README/SKILL.md/scripts/README.md 全部改为官方开关指引;`references/dewatermark.md` 重写(开关位置、地区/档位限制、无开关账号的兜底、SynthID 仍在且去不掉的诚实声明);历史 gwr 方案以 git 历史 v1.0.2 为准。
+- 已知限制(官方):印度/韩国/越南需 AI Ultra;工作/学校账号不适用。
+
 ## [1.0.2] - 2026-08-28
 
 真机端到端回归(会员恢复后首跑)+ 21-agent 对抗审查产出的一揽子修复。

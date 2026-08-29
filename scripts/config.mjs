@@ -1,6 +1,6 @@
 // 单一真相源:路径/端口/代理/区域标签。
 // 优先级:环境变量 > <skill根>/config.json > 自动探测默认(开箱即用的推荐值)。
-// 环境变量:GEMINI_STUDIO_PORT / MAIN_PORT / PROXY / PROFILE / DOWNLOAD_DIR / GWR / LOCALES / LAUNCHER / LOGIN
+// 环境变量:GEMINI_STUDIO_PORT / MAIN_PORT / PROXY / PROFILE / DOWNLOAD_DIR / LOCALES / LAUNCHER / LOGIN
 import { readFileSync, existsSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { dirname, join } from 'node:path';
@@ -20,7 +20,6 @@ export const MAIN_PORT = num('GEMINI_STUDIO_MAIN_PORT', 'mainPort', 9222); // �
 export const PROXY = pick('GEMINI_STUDIO_PROXY', 'proxy', '');                            // 空 = 直连(仅 fallback 下载脚本用)
 export const PROFILE_DIR = pick('GEMINI_STUDIO_PROFILE', 'profileDir', join(homedir(), '.gemini-automation-chrome'));
 export const DOWNLOAD_DIR = pick('GEMINI_STUDIO_DOWNLOAD_DIR', 'downloadDir', '');        // 空 = 按 ws 端口自动判断
-export const GWR_DIR = pick('GEMINI_STUDIO_GWR', 'gwrDir', join(homedir(), 'gemini-watermark-remover'));
 const _lc = String(pick('GEMINI_STUDIO_LOCALES', 'locales', 'zh-CN,en')).split(',').map(s => s.trim()).filter(Boolean);
 export const LOCALES = _lc.length ? _lc : ['zh-CN', 'en']; // 空列表回落默认,防全部匹配退化为 NOMATCH
 
